@@ -5,11 +5,11 @@ pipeline {
             agent {
                 docker {
                     image 'trufflesecurity/trufflehog:latest'
-                    args '-u root --entrypoint= -v "$PWD:/pwd"'
+                    args '-u root --entrypoint='
                 }
             }
             steps {
-                sh 'trufflehog filesystem /pwd'
+                sh 'trufflehog filesystem .'
             }
         }
         stage('Build') {

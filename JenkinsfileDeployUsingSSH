@@ -9,7 +9,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'trufflehog filesystem .'
+                sh 'trufflehog filesystem . --exclude-paths trufflehog-excluded-paths.txt'
             }
         }
         stage('Build') {

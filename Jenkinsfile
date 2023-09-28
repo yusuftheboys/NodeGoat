@@ -5,6 +5,7 @@ pipeline {
             agent {
                 docker {
                     image 'trufflesecurity/trufflehog:latest'
+                    args '--entrypoint=/bin/sh -v "$PWD:/pwd"'
                 }
             }
             steps {

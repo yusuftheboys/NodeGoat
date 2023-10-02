@@ -63,7 +63,7 @@ pipeline {
                     sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker pull xenjutsu/nodegoat:0.1'
                     sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker rm --force mongo'
                     sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker rm --force nodegoat'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker run --detach -p 27017:27017 --name mongo --network host mongo:latest'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker run --detach -p 27017:27017 --name mongo --network host mongo:3'
                     sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker run -it --detach -p 4000:4000 --name nodegoat --network host xenjutsu/nodegoat:0.1'
                 }
             }

@@ -1,0 +1,61 @@
+pipeline {
+    agent none
+    stages {
+        stage('Secret Scanning Using Trufflehog') {
+            agent {
+                docker {
+                    image 'trufflesecurity/trufflehog:latest'
+                    args '-u root --entrypoint='
+                }
+            }
+            steps {
+                sh 'trufflehog filesystem . --exclude-paths trufflehog-excluded-paths.txt > trufflehog-scan-result.txt'
+                sh 'cat trufflehog-scan-result.txt'
+                archiveArtifacts artifacts: 'trufflehog-scan-result.txt'
+            }
+        }
+        stage('Build') {
+            agent {
+              docker {
+                  image 'node:lts-buster-slim'
+              }
+            }
+            steps {
+                sh 'npm install'
+            }
+        }
+        stage('Test') {
+            agent {
+              docker {
+                  image 'node:lts-buster-slim'
+              }
+            }
+            steps {
+                sh 'npm run test'
+            }
+        }
+      stage('Build Docker Image and Push to Docker Registry') {
+            agent {
+                docker {
+                    image 'docker:dind'
+                    args '--user root --network host -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                sh 'docker build -t xenjutsu/nodegoat:0.1 .'
+            }
+        }
+        stage('Deploy Docker Image') {
+            agent {
+                docker {
+                    image 'docker:dind'
+                    args '--user root --network host -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                sh 'docker rm --force nodegoat'
+                sh 'docker run -it --detach -p 4000:4000 --name nodegoat --network host xenjutsu/nodegoat:0.1'
+            }
+        }
+    }
+}

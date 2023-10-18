@@ -70,20 +70,19 @@ pipeline {
                 archiveArtifacts artifacts: 'retire-scan-report.txt'
             }
         }
-        stage('SCA OWASP Dependency Check') {
+        stage('SCA Snyk Test') {
             agent {
               docker {
-                  image 'owasp/dependency-check:latest'
-                  args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
+                  image 'snyk/snyk:node'
+                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
               }
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "NodeJS Goof" --format ALL'
+                    sh 'snyk code test > snyk-sast-report.txt'
                 }
-                archiveArtifacts artifacts: 'dependency-check-report.html'
-                archiveArtifacts artifacts: 'dependency-check-report.json'
-                archiveArtifacts artifacts: 'dependency-check-report.xml'
+                sh 'cat snyk-scan-report.txt'
+                archiveArtifacts artifacts: 'snyk-sast-report.txt'
             }
         }
         stage('Build Docker Image and Push to Docker Registry') {

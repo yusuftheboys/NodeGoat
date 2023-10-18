@@ -70,7 +70,7 @@ pipeline {
                 archiveArtifacts artifacts: 'retire-scan-report.txt'
             }
         }
-        stage('SCA Snyk Test') {
+        stage('SAST Snyk') {
             agent {
               docker {
                   image 'snyk/snyk:node'

@@ -114,5 +114,29 @@ pipeline {
                 }
             }
         }
+        stage('DAST OWASP ZAP') {
+            agent {
+                docker {
+                    image 'owasp/zap2docker-stable:latest'
+                    args '-u root --network host -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
+                }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'zap-full-scan.py -t http://192.168.0.104:4000 -r zapfull.html -x zapfull.xml'
+                }
+                sh 'cp /zap/wrk/zapfull.html ./zapfull.html'
+                sh 'cp /zap/wrk/zapfull.xml ./zapfull.xml'
+                archiveArtifacts artifacts: 'zapfull.html'
+                archiveArtifacts artifacts: 'zapfull.xml'
+            }
+        }
+    }
+    post {
+        always {
+            node('built-in') {
+                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 548afd6fab3bea9794a41b31da0e9404f733e222" -F "scan_type=ZAP Scan" -F "file=@./zapfull.xml;type=text/xml" -F "engagement=1"'
+            }
+        }
     }
 }

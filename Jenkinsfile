@@ -114,23 +114,38 @@ pipeline {
                 }
             }
         }
-        stage('DAST OWASP ZAP') {
+        stage('DAST Nuclei') {
             agent {
                 docker {
-                    image 'owasp/zap2docker-stable:latest'
-                    args '-u root --network host -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
+                    image 'projectdiscovery/nuclei'
+                    args '--user root --network host --entrypoint='
                 }
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'zap-full-scan.py -t http://192.168.1.84:4000 -r zapfull.html -x zapfull.xml'
+                    sh 'nuclei -u http://192.168.1.84:4000 > nuclei-report.txt'
+                    sh 'cat nuclei-report.txt'
                 }
-                sh 'cp /zap/wrk/zapfull.html ./zapfull.html'
-                sh 'cp /zap/wrk/zapfull.xml ./zapfull.xml'
-                archiveArtifacts artifacts: 'zapfull.html'
-                archiveArtifacts artifacts: 'zapfull.xml'
+                archiveArtifacts artifacts: 'nuclei-report.txt'
             }
         }
+//        stage('DAST OWASP ZAP') {
+//            agent {
+//                docker {
+//                    image 'owasp/zap2docker-stable:latest'
+//                    args '-u root --network host -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
+//                }
+//            }
+//            steps {
+//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+//                    sh 'zap-full-scan.py -t http://192.168.1.84:4000 -r zapfull.html -x zapfull.xml'
+//                }
+//                sh 'cp /zap/wrk/zapfull.html ./zapfull.html'
+//                sh 'cp /zap/wrk/zapfull.xml ./zapfull.xml'
+//                archiveArtifacts artifacts: 'zapfull.html'
+//                archiveArtifacts artifacts: 'zapfull.xml'
+//            }
+//        }
     }
 //    post {
 //        always {

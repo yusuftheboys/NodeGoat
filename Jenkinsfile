@@ -14,10 +14,10 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'trufflehog filesystem . --exclude-paths trufflehog-excluded-paths.txt --fail > trufflehog-scan-result.txt'
+                    sh 'trufflehog filesystem . --exclude-paths trufflehog-excluded-paths.txt --fail --json > trufflehog-scan-result.json'
                 }
-                sh 'cat trufflehog-scan-result.txt'
-                archiveArtifacts artifacts: 'trufflehog-scan-result.txt'
+                sh 'cat trufflehog-scan-result.json'
+                archiveArtifacts artifacts: 'trufflehog-scan-result.json'
             }
         }
         stage('Build') {
@@ -135,6 +135,7 @@ pipeline {
     post {
         always {
             node('built-in') {
+                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 548afd6fab3bea9794a41b31da0e9404f733e222" -F "scan_type=Trufflehog Scan" -F "file=@./trufflehog-scan-result.json;type=application/json" -F "engagement=1"'
                 sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 548afd6fab3bea9794a41b31da0e9404f733e222" -F "scan_type=ZAP Scan" -F "file=@./zapfull.xml;type=text/xml" -F "engagement=1"'
             }
         }

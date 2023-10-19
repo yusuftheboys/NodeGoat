@@ -123,10 +123,10 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'nuclei -u http://192.168.1.84:4000 > nuclei-report.txt'
-                    sh 'cat nuclei-report.txt'
+                    sh 'nuclei -u http://localhost:4000 -j > nuclei-report.json'
+                    sh 'cat nuclei-report.json'
                 }
-                archiveArtifacts artifacts: 'nuclei-report.txt'
+                archiveArtifacts artifacts: 'nuclei-report.json'
             }
         }
 //        stage('DAST OWASP ZAP') {
@@ -150,8 +150,9 @@ pipeline {
 //    post {
 //        always {
 //            node('built-in') {
-//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 548afd6fab3bea9794a41b31da0e9404f733e222" -F "scan_type=Trufflehog Scan" -F "file=@./trufflehog-scan-result.json;type=application/json" -F "engagement=1"'
-//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 548afd6fab3bea9794a41b31da0e9404f733e222" -F "scan_type=ZAP Scan" -F "file=@./zapfull.xml;type=text/xml" -F "engagement=1"'
+//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=Trufflehog Scan" -F "file=@./trufflehog-scan-result.json;type=application/json" -F "engagement=1"'
+//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=Nuclei Scan" -F "file=@./nuclei-report.json;type=application/json" -F "engagement=1"'
+//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=ZAP Scan" -F "file=@./zapfull.xml;type=text/xml" -F "engagement=1"'
 //            }
 //        }
 //   }

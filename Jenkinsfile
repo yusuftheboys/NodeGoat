@@ -93,7 +93,9 @@ pipeline {
               }
             }
             steps {
-                sh 'rm -r node_modules/sonar-scanner'
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    sh 'rm -r node_modules/sonar-scanner'
+                }
                 sh 'npm install sonar-scanner'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh './node_modules/sonar-scanner/index.js -Dsonar.projectKey=NodeGoat -Dsonar.qualitygate.wait=true -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_2f839e4c5ea3eb6387d2c29ae5776aa7dd0ec327 > sonar-scan-log.txt'

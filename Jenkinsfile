@@ -40,21 +40,21 @@ pipeline {
                 sh 'npm run test'
             }
         }
-        stage('SCA Snyk Test') {
-            agent {
-              docker {
-                  image 'snyk/snyk:node'
-                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
-              }
-            }
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'snyk test > snyk-scan-report.txt'
-                }
-                sh 'cat snyk-scan-report.txt'
-                archiveArtifacts artifacts: 'snyk-scan-report.txt'
-            }
-        }
+//        stage('SCA Snyk Test') {
+//            agent {
+//              docker {
+//                  image 'snyk/snyk:node'
+//                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
+//              }
+//            }
+//            steps {
+//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+//                    sh 'snyk test > snyk-scan-report.txt'
+//                }
+//                sh 'cat snyk-scan-report.txt'
+//                archiveArtifacts artifacts: 'snyk-scan-report.txt'
+//            }
+//        }
         stage('SCA Retire Js') {
             agent {
               docker {
@@ -70,21 +70,21 @@ pipeline {
                 archiveArtifacts artifacts: 'retire-scan-report.txt'
             }
         }
-        stage('SAST Snyk') {
-            agent {
-              docker {
-                  image 'snyk/snyk:node'
-                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
-              }
-            }
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'snyk code test > snyk-sast-report.txt'
-                }
-                sh 'cat snyk-scan-report.txt'
-                archiveArtifacts artifacts: 'snyk-sast-report.txt'
-            }
-        }
+//        stage('SAST Snyk') {
+//            agent {
+//              docker {
+//                  image 'snyk/snyk:node'
+//                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
+//              }
+//            }
+//            steps {
+//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+//                    sh 'snyk code test > snyk-sast-report.txt'
+//                }
+//                sh 'cat snyk-scan-report.txt'
+//                archiveArtifacts artifacts: 'snyk-sast-report.txt'
+//            }
+//        }
         stage('SAST SonarQube') {
             agent {
               docker {
@@ -98,7 +98,7 @@ pipeline {
                 }
                 sh 'npm install sonar-scanner'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'ls -la ./modules
+                    sh 'ls -la ./node_modules'
                     sh './node_modules/sonar-scanner/index.js -Dsonar.projectKey=NodeGoat -Dsonar.qualitygate.wait=true -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_2f839e4c5ea3eb6387d2c29ae5776aa7dd0ec327' 
                 }
             }

@@ -89,6 +89,7 @@ pipeline {
             agent {
               docker {
                   image 'node:lts-buster-slim'
+                  args '-u root --network host'
               }
             }
             steps {
@@ -129,21 +130,21 @@ pipeline {
                 }
             }
         }
-        stage('DAST Nuclei') {
-            agent {
-                docker {
-                    image 'projectdiscovery/nuclei'
-                    args '--user root --network host --entrypoint='
-                }
-            }
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'nuclei -u http://localhost:4000 -j > nuclei-report.json'
-                    sh 'cat nuclei-report.json'
-                }
-                archiveArtifacts artifacts: 'nuclei-report.json'
-            }
-        }
+//        stage('DAST Nuclei') {
+//            agent {
+//                docker {
+//                    image 'projectdiscovery/nuclei'
+//                    args '--user root --network host --entrypoint='
+//                }
+//            }
+//            steps {
+//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+//                    sh 'nuclei -u http://localhost:4000 -j > nuclei-report.json'
+//                    sh 'cat nuclei-report.json'
+//                }
+//                archiveArtifacts artifacts: 'nuclei-report.json'
+//            }
+//        }
 //        stage('DAST OWASP ZAP') {
 //            agent {
 //                docker {

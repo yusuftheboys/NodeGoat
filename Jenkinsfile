@@ -40,21 +40,21 @@ pipeline {
                 sh 'npm run test'
             }
         }
-//        stage('SCA Snyk Test') {
-//            agent {
-//              docker {
-//                  image 'snyk/snyk:node'
-//                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
-//              }
-//            }
-//            steps {
-//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-//                    sh 'snyk test > snyk-scan-report.txt'
-//                }
-//                sh 'cat snyk-scan-report.txt'
-//                archiveArtifacts artifacts: 'snyk-scan-report.txt'
-//            }
-//        }
+        stage('SCA Snyk Test') {
+            agent {
+              docker {
+                  image 'snyk/snyk:node'
+                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
+              }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'snyk test > snyk-scan-report.txt'
+                }
+                sh 'cat snyk-scan-report.txt'
+                archiveArtifacts artifacts: 'snyk-scan-report.txt'
+            }
+        }
         stage('SCA Retire Js') {
             agent {
               docker {
@@ -70,21 +70,21 @@ pipeline {
                 archiveArtifacts artifacts: 'retire-scan-report.txt'
             }
         }
-//        stage('SAST Snyk') {
-//            agent {
-//              docker {
-//                  image 'snyk/snyk:node'
-//                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
-//              }
-//            }
-//            steps {
-//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-//                    sh 'snyk code test > snyk-sast-report.txt'
-//                }
-//                sh 'cat snyk-scan-report.txt'
-//                archiveArtifacts artifacts: 'snyk-sast-report.txt'
-//            }
-//        }
+        stage('SAST Snyk') {
+            agent {
+              docker {
+                  image 'snyk/snyk:node'
+                  args '-u root --network host --env SNYK_TOKEN=$SNYK_CREDENTIALS_PSW --entrypoint='
+              }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'snyk code test > snyk-sast-report.txt'
+                }
+                sh 'cat snyk-scan-report.txt'
+                archiveArtifacts artifacts: 'snyk-sast-report.txt'
+            }
+        }
         stage('SAST SonarQube') {
             agent {
               docker {
@@ -120,10 +120,10 @@ pipeline {
             }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: "DeploymentSSHKey", keyFileVariable: 'keyfile')]) {
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.1.84 "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.1.84 docker pull xenjutsu/nodegoat:0.1'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.1.84 docker rm --force nodegoat'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.1.84 docker run -it --detach -p 4000:4000 --name nodegoat --network host xenjutsu/nodegoat:0.1'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.4 "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.4 docker pull xenjutsu/nodegoat:0.1'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.4 docker rm --force nodegoat'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.4 docker run -it --detach -p 4000:4000 --name nodegoat --network host xenjutsu/nodegoat:0.1'
                 }
             }
         }

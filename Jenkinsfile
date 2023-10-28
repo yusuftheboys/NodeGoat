@@ -138,7 +138,7 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'nuclei -u http://192.168.0.105:4000 > nuclei-report.txt'
+                    sh 'nuclei -u http://192.168.0.105:4000 -nc > nuclei-report.txt'
                     sh 'cat nuclei-report.txt'
                 }
                 archiveArtifacts artifacts: 'nuclei-report.txt'

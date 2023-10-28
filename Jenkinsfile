@@ -85,6 +85,7 @@ pipeline {
                 archiveArtifacts artifacts: 'snyk-sast-report.txt'
             }
         }
+        /*
         stage('SAST SonarQube') {
             agent {
               docker {
@@ -98,6 +99,7 @@ pipeline {
                 }
             }
         }
+        */
         stage('Build Docker Image and Push to Docker Registry') {
             agent {
                 docker {
@@ -127,38 +129,38 @@ pipeline {
                 }
             }
         }
-//        stage('DAST Nuclei') {
-//            agent {
-//                docker {
-//                    image 'projectdiscovery/nuclei'
-//                    args '--user root --network host --entrypoint='
-//                }
-//            }
-//            steps {
-//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-//                    sh 'nuclei -u http://localhost:4000 -j > nuclei-report.json'
-//                    sh 'cat nuclei-report.json'
-//                }
-//                archiveArtifacts artifacts: 'nuclei-report.json'
-//            }
-//        }
-//        stage('DAST OWASP ZAP') {
-//            agent {
-//                docker {
-//                    image 'owasp/zap2docker-stable:latest'
-//                    args '-u root --network host -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
-//                }
-//            }
-//            steps {
-//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-//                    sh 'zap-full-scan.py -t http://192.168.1.84:4000 -r zapfull.html -x zapfull.xml'
-//                }
-//                sh 'cp /zap/wrk/zapfull.html ./zapfull.html'
-//                sh 'cp /zap/wrk/zapfull.xml ./zapfull.xml'
-//                archiveArtifacts artifacts: 'zapfull.html'
-//                archiveArtifacts artifacts: 'zapfull.xml'
-//            }
-//        }
+        stage('DAST Nuclei') {
+            agent {
+                docker {
+                    image 'projectdiscovery/nuclei'
+                    args '--user root --network host --entrypoint='
+                }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'nuclei -u http://localhost:4000 -j > nuclei-report.json'
+                    sh 'cat nuclei-report.json'
+                }
+                archiveArtifacts artifacts: 'nuclei-report.json'
+            }
+        }
+        stage('DAST OWASP ZAP') {
+            agent {
+                docker {
+                    image 'owasp/zap2docker-stable:latest'
+                    args '-u root --network host -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
+                }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'zap-baseline.py -t http://192.168.1.84:4000 -r zapbaseline.html -x zapbaseline.xml'
+                }
+                sh 'cp /zap/wrk/zapbaseline.html ./zapbaseline.html'
+                sh 'cp /zap/wrk/zapbaseline.xml ./zapbaseline.xml'
+                archiveArtifacts artifacts: 'zapbaseline.html'
+                archiveArtifacts artifacts: 'zapbaseline.xml'
+            }
+        }
     }
 //    post {
 //        always {

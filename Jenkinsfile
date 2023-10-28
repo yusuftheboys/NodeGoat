@@ -138,10 +138,10 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'nuclei -u http://192.168.0.105:4000 -j > nuclei-report.json'
-                    sh 'cat nuclei-report.json'
+                    sh 'nuclei -u http://192.168.0.105:4000 > nuclei-report.txt'
+                    sh 'cat nuclei-report.txt'
                 }
-                archiveArtifacts artifacts: 'nuclei-report.json'
+                archiveArtifacts artifacts: 'nuclei-report.txt'
             }
         }
         stage('DAST OWASP ZAP') {

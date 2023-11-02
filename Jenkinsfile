@@ -122,10 +122,10 @@ pipeline {
             }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: "DeploymentSSHKey", keyFileVariable: 'keyfile')]) {
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker pull xenjutsu/nodegoat:0.1'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker rm --force nodegoat'
-                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.105 docker run -it --detach -p 4000:4000 --name nodegoat --network host xenjutsu/nodegoat:0.1'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.104 "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.104 docker pull xenjutsu/nodegoat:0.1'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.104 docker rm --force nodegoat'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no jenkins@192.168.0.104 docker run -it --detach -p 4000:4000 --name nodegoat --network host xenjutsu/nodegoat:0.1'
                 }
             }
         }
@@ -138,10 +138,10 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'nuclei -u http://192.168.0.105:4000 -nc > nuclei-report.txt'
-                    sh 'cat nuclei-report.txt'
+                    sh 'nuclei -u http://192.168.0.104:4000 -nc -j > nuclei-report.json'
+                    sh 'cat nuclei-report.json'
                 }
-                archiveArtifacts artifacts: 'nuclei-report.txt'
+                archiveArtifacts artifacts: 'nuclei-report.json'
             }
         }
         stage('DAST OWASP ZAP') {
@@ -153,7 +153,7 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'zap-baseline.py -t http://192.168.0.105:4000 -r zapbaseline.html -x zapbaseline.xml'
+                    sh 'zap-baseline.py -t http://192.168.0.104:4000 -r zapbaseline.html -x zapbaseline.xml'
                 }
                 sh 'cp /zap/wrk/zapbaseline.html ./zapbaseline.html'
                 sh 'cp /zap/wrk/zapbaseline.xml ./zapbaseline.xml'
@@ -162,13 +162,13 @@ pipeline {
             }
         }
     }
-//    post {
-//        always {
-//            node('built-in') {
-//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=Trufflehog Scan" -F "file=@./trufflehog-scan-result.json;type=application/json" -F "engagement=1"'
-//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=Nuclei Scan" -F "file=@./nuclei-report.json;type=application/json" -F "engagement=1"'
-//                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=ZAP Scan" -F "file=@./zapfull.xml;type=text/xml" -F "engagement=1"'
-//            }
-//        }
-//   }
+    post {
+        always {
+            node('built-in') {
+                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=Trufflehog Scan" -F "file=@./trufflehog-scan-result.json;type=application/json" -F "engagement=14"'
+                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=Nuclei Scan" -F "file=@./nuclei-report.json;type=application/json" -F "engagement=14"'
+                sh 'curl -X POST http://localhost:8080/api/v2/import-scan/ -H "Authorization: Token 4352361ac0640d6cb3284e5354f194fc89344c14" -F "scan_type=ZAP Scan" -F "file=@./zapfull.xml;type=text/xml" -F "engagement=14"'
+            }
+        }
+   }
 }

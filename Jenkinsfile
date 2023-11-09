@@ -161,6 +161,42 @@ pipeline {
                 archiveArtifacts artifacts: 'zapbaseline.xml'
             }
         }
+        stage('Ansible Hardening') {
+            agent {
+              docker {
+                  image 'python:3.9-bullseye'
+                  args '-u root --network host --entrypoint='
+              }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'pip3 install ansible'
+                    sh 'apt-get update'
+                    sh 'apt-get install openssh-server sshpass -y'
+                    sh 'mkdir ~/.ssh'
+                    sh 'touch ~/.ssh/known_hosts'
+                    sh 'ssh-keyscan 192.168.0.104 >> ~/.ssh/known_hosts'
+                    sh 'ansible-galaxy install dev-sec.os-hardening'
+                    sh """cat > inventory.ini <<EOL
+[ubuntuserver]
+192.168.0.104 ansible_user=jenkins ansible_password=jenkins
+EOL
+"""
+                    sh """cat > ansible-hardening.yml <<EOL
+---
+- name: Playbook to harden Ubuntu OS.
+  hosts: ubuntuserver
+  remote_user: jenkins
+  become: yes
+
+  roles:
+  - dev-sec.os-hardening
+EOL
+"""
+                    sh 'ansible-playbook -i inventory.ini ansible-hardening.yml'
+                }
+            }
+        }
     }
     post {
         always {

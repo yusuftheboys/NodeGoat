@@ -23,8 +23,7 @@ pipeline {
               }
             }
             steps {
-                sh 'npm install --force'
-                sh 'npm install --g grunt-cli'
+                sh 'npm install -g grunt-cli'
             }
         }
         stage('Test') {

@@ -23,7 +23,8 @@ pipeline {
               }
             }
             steps {
-                sh 'npm install -g grunt-cli'
+                sh 'npm cache clean --force'
+                sh 'npm install'
             }
         }
         stage('Test') {

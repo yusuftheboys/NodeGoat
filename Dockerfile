@@ -17,3 +17,5 @@ COPY --chown=node . $WORKDIR
 USER $USER
 EXPOSE 4000
 CMD [ "node", "server.js" ]
+HEALTHCHECK --interval=5s --timeout=3s \
+CMD curl -f http://localhost:8080/ || exit 1

@@ -1,5 +1,5 @@
 {
-  "name": "owasp-nodejs-goat",
+  "name": "zapphireye-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -50,8 +50,5 @@
       "last 1 safari version"
     ]
   }
-  "repository": "https://github.com/OWASP/NodejsGoat",
-  "license": "Apache 2.0"
 }
-  
 

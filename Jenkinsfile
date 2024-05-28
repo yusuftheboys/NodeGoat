@@ -1,5 +1,9 @@
 pipeline {
     agent none
+    environment {
+        DOCKERHUB_CREDENTIAL_PSWS = credentials('DockerLoginPassword')
+        DOCKERHUB_CREDENTIALS_USR = credentials('DockerLoginUser')
+    }
     stages {
         stage('Secret Scanning Using Trufflehog') {
             agent {
